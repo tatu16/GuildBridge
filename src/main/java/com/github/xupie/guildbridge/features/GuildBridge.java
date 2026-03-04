@@ -16,9 +16,10 @@ public class GuildBridge {
     //§2Guild > §aXupie §eleft.
     //§2Guild > §a[VIP§6+§a] MangoMilkshake §e[STAFF]§f: ✧EmanCarrier ᴹᴼᴰ: Test
     //§2Guild > §7DuckiePrincess §e[STAFF]§f: ✧EmanCarrier ᴹᴼᴰ: Test
-    public static final Pattern GUILD_BRIDGE_MESSAGE_PATTERN = Pattern.compile("^§2Guild > §.(?:\\[.*\\] )?(\\w+) §.\\[\\w+\\]§f: ✧?(\\w+)(?: \\S*)?: (.*)$");
-    public static final Pattern GUILD_MESSAGE_PATTERN = Pattern.compile("^§2Guild > (.*?(?: |§f)(\\w+)) §.\\[\\w+]§f: (?!✧)(.*)$");
-    public static final Pattern GUILD_JOIN_LEFT = Pattern.compile("^§2Guild > §.\\w+ §.(?:joined|left)\\.$");
+    //§2Guild > §b[MVP§c+§b] IsleofDucks §e[STAFF]§f: ˚Nonth: genius
+    public static final Pattern GUILD_BRIDGE_MESSAGE_PATTERN = Pattern.compile("^§2Guild > §.(?:\\[.*] )?(?<bot>\\w+) §.\\[\\w+]§f: [✧˚]?(?<player>\\w+)(?: \\S*)?: (?<message>.*)$");
+    public static final Pattern GUILD_MESSAGE_PATTERN = Pattern.compile("^§2Guild > .*?(?: |§f)(?<player>\\w+) §.\\[\\w+]§f: (?!✧)(?<message>.*)$");
+    public static final Pattern GUILD_JOIN_LEFT = Pattern.compile("^§2Guild > §.(?<player>\\w+) §.(?<action>joined|left)\\.$");
 
     private static final String GUILD_PREFIX = "§2Guild >";
     private static final String GUILD_PREFIX_COMPACT = "§2G>";
@@ -27,16 +28,18 @@ public class GuildBridge {
 
     public static Text register(Text textMessage, boolean b) {
         String msg = textMessage.getString();
+        if (!msg.startsWith("§2Guild > ")) return textMessage;
+
         ModConfig config = ModConfig.HANDLER.instance();
 
         Matcher bridgeMatcher = GUILD_BRIDGE_MESSAGE_PATTERN.matcher(msg);
-        if (bridgeMatcher.matches() && bridgeMatcher.group(1).equals(config.botIGN.trim())) {
-            return handleBridgeMessage(bridgeMatcher.group(2), bridgeMatcher.group(3), config);
+        if (bridgeMatcher.matches() && bridgeMatcher.group("bot").equals(config.botIGN.trim())) {
+            return handleBridgeMessage(bridgeMatcher.group("player"), bridgeMatcher.group("message"), config);
         }
 
         Matcher guildMessage = GUILD_MESSAGE_PATTERN.matcher(msg);
         if (guildMessage.matches()) {
-            return handleGuildMessage(guildMessage.group(2), msg, config);
+            return handleGuildMessage(guildMessage.group("player"), msg, config);
         }
 
         Matcher joinMessage = GUILD_JOIN_LEFT.matcher(msg);

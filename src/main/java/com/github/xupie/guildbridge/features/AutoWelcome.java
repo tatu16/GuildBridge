@@ -5,8 +5,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
-import java.util.concurrent.ThreadLocalRandom;
-
 public class AutoWelcome {
 
     private static long lastWelcome = 0;
@@ -19,19 +17,10 @@ public class AutoWelcome {
                 MinecraftClient client = MinecraftClient.getInstance();
 
                 if (client.player != null && client.player.networkHandler != null) {
-                    String message;
-
-                    // 10% chance
-                    if (ThreadLocalRandom.current().nextInt(100) < 10) {
-                        message = "Welcome Trucksicle!";
-                    } else {
-                        message = "Welcome Princess!";
-                    }
-
                     new Thread(() -> {
                         try {
-                            Thread.sleep(1000);
-                            client.player.networkHandler.sendChatCommand("gchat " + message);
+                            Thread.sleep(2000);
+                            client.player.networkHandler.sendChatCommand("gchat Welcome Princess!");
                             lastWelcome = System.currentTimeMillis();
                         } catch (InterruptedException ignored) {}
                     }).start();
