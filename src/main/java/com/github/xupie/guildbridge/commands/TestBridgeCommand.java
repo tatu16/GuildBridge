@@ -7,16 +7,17 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
+
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal;
 
 @Environment(EnvType.CLIENT)
 public final class TestBridgeCommand {
     public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         dispatcher.register(
-            ClientCommandManager.literal("testbridge")
+            literal("testbridge")
                 .executes(TestBridgeCommand::broadcast)
         );
     }
@@ -24,14 +25,14 @@ public final class TestBridgeCommand {
     private static int broadcast(CommandContext<FabricClientCommandSource> context) {
         String botIGN = ModConfig.HANDLER.instance().botIGN;
 
-        Text processed = GuildBridge.register(
-            Text.literal("§2Guild > §b[MVP§c+§b] " + botIGN + " §e[STAFF]§f: Xupie: b"),
+        Component processed = GuildBridge.register(
+            Component.literal("§2Guild > §b[MVP§c+§b] " + botIGN + " §e[STAFF]§f: Xupie: b"),
             true
         );
 
-        MinecraftClient client = MinecraftClient.getInstance();
+        Minecraft client = Minecraft.getInstance();
         if (client.player != null) {
-            client.inGameHud.getChatHud().addMessage(processed);
+            client.gui.getChat().addClientSystemMessage(processed);
         }
 
         return Command.SINGLE_SUCCESS;

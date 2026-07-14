@@ -7,10 +7,10 @@ import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 
-import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal;
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommands.literal;
 
 @Environment(EnvType.CLIENT)
 public final class GuildBridgeCommand {
@@ -24,7 +24,7 @@ public final class GuildBridgeCommand {
 
     private static int openConfig(CommandContext<FabricClientCommandSource> context) {
         Screen configScreen = ModConfig.configScreen(null);
-        MinecraftClient.getInstance().setScreen(configScreen);
+        Minecraft.getInstance().setScreen(configScreen);
         return Command.SINGLE_SUCCESS;
     }
 }
