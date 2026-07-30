@@ -20,7 +20,8 @@ public class GuildBridge {
     //§2Guild > §a[VIP§6+§a] MangoMilkshake §e[STAFF]§f: ✧EmanCarrier ᴹᴼᴰ: Test
     //§2Guild > §7DuckiePrincess §e[STAFF]§f: ✧EmanCarrier ᴹᴼᴰ: Test
     //§2Guild > §b[MVP§c+§b] IsleofDucks §e[STAFF]§f: ˚Nonth: genius
-    public static final Pattern GUILD_BRIDGE_MESSAGE_PATTERN = Pattern.compile("^§2Guild > §.(?:\\[.*] )?(?<bot>\\w+) §.\\[\\w+]§f: [✧˚]?(?<player>\\w+)(?: \\S*)?: (?<message>.*)$");
+    //§2Guild > §b[MVP§c+§b] IsleofDucks §e[STAFF]§f: ˚✧Serendibite ᴬᴰᴹᴵᴺ: test
+    public static final Pattern GUILD_BRIDGE_MESSAGE_PATTERN = Pattern.compile("^§2Guild > §.(?:\\[.*] )?(?<bot>\\w+) §.\\[\\w+]§f: (?<duckling>˚)?✧?(?<player>\\w+)(?: [^:]+)?: (?<message>.*)$");
     public static final Pattern GUILD_MESSAGE_PATTERN = Pattern.compile("^§2Guild > .*?(?: |§f)(?<player>\\w+) §.\\[\\w+]§f: (?!✧)(?<message>.*)$");
     public static final Pattern GUILD_JOIN_LEFT = Pattern.compile("^§2Guild > §.(?<player>\\w+) §.(?<action>joined|left)\\.$");
 
@@ -31,13 +32,14 @@ public class GuildBridge {
 
     public static Component register(Component textMessage, boolean b) {
         String msg = textMessage.getString();
-        if (!msg.startsWith("§2Guild > ")) return textMessage;
+        if (!msg.startsWith(GUILD_PREFIX)) return textMessage;
 
         ModConfig config = ModConfig.HANDLER.instance();
 
         Matcher bridgeMatcher = GUILD_BRIDGE_MESSAGE_PATTERN.matcher(msg);
         if (bridgeMatcher.matches() && bridgeMatcher.group("bot").equals(config.botIGN.trim())) {
-            return handleBridgeMessage(bridgeMatcher.group("player"), bridgeMatcher.group("message"), config);
+            boolean isDuckling = bridgeMatcher.group("duckling") != null;
+            return handleBridgeMessage(bridgeMatcher.group("player"), bridgeMatcher.group("message"), isDuckling, config);
         }
 
         Matcher guildMessage = GUILD_MESSAGE_PATTERN.matcher(msg);
@@ -53,10 +55,10 @@ public class GuildBridge {
         return textMessage;
     }
 
-    private static Component handleBridgeMessage(String player, String message, ModConfig config) {
+    private static Component handleBridgeMessage(String player, String message, boolean isDuckling, ModConfig config) {
         String compact = config.compactGuildMessage ? BRIDGE_PREFIX_COMPACT : BRIDGE_PREFIX_FULL;
         String rank = config.addRank && config.rank != null ? " " + config.rank : "";
-        String prefix = config.addPrefix && config.prefix != null ? " " + config.prefix : "";
+        String prefix = resolvePrefix(config, isDuckling);
 
         Color playerNameColor = config.playerNameColor;
         TextColor textColor = playerNameColor != null
@@ -88,5 +90,15 @@ public class GuildBridge {
             .withHoverEvent(new HoverEvent.ShowText(Component.literal("§eClick here to run /pv " + player)))
             .withUnderlined(true)
             .withColor(ChatFormatting.AQUA);
+    }
+
+    private static String resolvePrefix(ModConfig config, boolean isDuckling) {
+        if (!config.addPrefix) return "";
+        if (config.duckOrDucklingPrefix) {
+            boolean isDucklingPlayer = isDuckling ^ (config.guildOption == ModConfig.Guild.DUCKLING);
+            return isDucklingPlayer ? " §e[DUCKLING]" : " §e[DUCK]";
+        }
+
+        return config.prefix != null ? " " + config.prefix : "";
     }
 }
