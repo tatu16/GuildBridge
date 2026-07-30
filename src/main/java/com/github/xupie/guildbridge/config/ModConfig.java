@@ -1,12 +1,7 @@
 package com.github.xupie.guildbridge.config;
 
-import dev.isxander.yacl3.api.ConfigCategory;
-import dev.isxander.yacl3.api.Option;
-import dev.isxander.yacl3.api.OptionDescription;
-import dev.isxander.yacl3.api.YetAnotherConfigLib;
-import dev.isxander.yacl3.api.controller.BooleanControllerBuilder;
-import dev.isxander.yacl3.api.controller.ColorControllerBuilder;
-import dev.isxander.yacl3.api.controller.StringControllerBuilder;
+import dev.isxander.yacl3.api.*;
+import dev.isxander.yacl3.api.controller.*;
 import dev.isxander.yacl3.config.v2.api.ConfigClassHandler;
 import dev.isxander.yacl3.config.v2.api.SerialEntry;
 import dev.isxander.yacl3.config.v2.api.serializer.GsonConfigSerializerBuilder;
@@ -15,6 +10,9 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 import java.awt.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class ModConfig {
     public static ConfigClassHandler<ModConfig> HANDLER = ConfigClassHandler.createBuilder(ModConfig.class)
@@ -39,6 +37,12 @@ public class ModConfig {
     public boolean addPrefix = true;
 
     @SerialEntry
+    public boolean duckOrDucklingPrefix = true;
+
+    @SerialEntry
+    public Guild guildOption = Guild.DUCK;
+
+    @SerialEntry
     public String prefix = "§e[BRIDGE]";
 
     @SerialEntry
@@ -48,81 +52,131 @@ public class ModConfig {
     public boolean autoWelcome = true;
 
     public static Screen configScreen(Screen parent) {
-        return YetAnotherConfigLib.create(HANDLER, (((defaults, config, builder) -> builder
-            .title(Component.literal("Guild Bridge Config"))
-            .category(ConfigCategory.createBuilder()
-                .name(Component.literal("General"))
+        return YetAnotherConfigLib.create(HANDLER, (defaults, config, builder) -> {
+            final Component title = Component.literal("Guild Bridge Config");
+            builder.title(title);
 
-                // bot IGN
-                .option(Option.<String>createBuilder()
-                    .name(Component.literal("Bot IGN"))
-                    .binding("IsleofDucks", () -> config.botIGN, newVal -> config.botIGN = newVal)
-                    .description(OptionDescription.of(Component.literal("")))
-                    .controller(StringControllerBuilder::create)
-                    .build())
+            final ConfigCategory.Builder category = ConfigCategory.createBuilder();
+            category.name(Component.literal("General"));
+            // bot IGN
+            category.option(option(
+                "Bot IGN",
+                "",
+                "IsleofDucks",
+                () -> config.botIGN,
+                value -> config.botIGN = value,
+                StringControllerBuilder::create
+            ));
+            // Compact Guild Message
+            category.option(option(
+                "Compact Guild Message",
+                "Changes \"Guild >\" to \"G>\"",
+                false,
+                () -> config.compactGuildMessage,
+                value -> config.compactGuildMessage = value,
+                opt -> BooleanControllerBuilder.create(opt).coloured(true)
+            ));
+            // Add Rank
+            category.option(option(
+                "Add Rank",
+                "Adds Rank to bridge's messages",
+                true,
+                () -> config.addRank,
+                value -> config.addRank = value,
+                opt -> BooleanControllerBuilder.create(opt).coloured(true)
+            ));
+            // Rank
+            category.option(option(
+                "Rank",
+                "",
+                "§d[MEOW]",
+                () -> config.rank,
+                value -> config.rank = value,
+                StringControllerBuilder::create
+            ));
+            // Add Prefix
+            category.option(option(
+                "Add Prefix",
+                "Adds Prefix to bridge's messages",
+                true,
+                () -> config.addPrefix,
+                value -> config.addPrefix = value,
+                opt -> BooleanControllerBuilder.create(opt).coloured(true)
+            ));
+            // Use Duck or Duckling as prefix
+            category.option(option(
+                "Use Duck or Duckling as prefix",
+                "Forces prefix to Duck or Duckling depending which guild they are in.",
+                true,
+                () -> config.duckOrDucklingPrefix,
+                value -> config.duckOrDucklingPrefix = value,
+                opt -> BooleanControllerBuilder.create(opt).coloured(true)
+            ));
+            // Guild
+            category.option(option(
+                "Guild",
+                "",
+                Guild.DUCK,
+                () -> config.guildOption,
+                value -> config.guildOption = value,
+                opt -> EnumControllerBuilder.create(opt).enumClass(Guild.class)
+            ));
+            // Prefix
+            category.option(option(
+                "Prefix",
+                "",
+                "§e[BRIDGE]",
+                () -> config.prefix,
+                value -> config.prefix = value,
+                StringControllerBuilder::create
+            ));
+            // Player Name Color
+            category.option(option(
+                "Player Name Color",
+                "",
+                Color.CYAN,
+                () -> config.playerNameColor,
+                value -> config.playerNameColor = value,
+                ColorControllerBuilder::create
+            ));
+            // Auto Welcome Ducksicle
+            category.option(option(
+                "Auto Welcome Ducksicle",
+                "",
+                false,
+                () -> config.autoWelcome,
+                value -> config.autoWelcome = value,
+                opt -> BooleanControllerBuilder.create(opt).coloured(true)
+            ));
+            builder.category(category.build());
 
-                // Compact Guild Message
-                .option(Option.<Boolean>createBuilder()
-                    .name(Component.literal("Compact Guild Message"))
-                    .binding(false, () -> config.compactGuildMessage, newVal -> config.compactGuildMessage = newVal)
-                    .description(OptionDescription.of(Component.literal("Changes \"Guild >\" to \"G>\"")))
-                    .controller(opt -> BooleanControllerBuilder.create(opt)
-                        .coloured(true))
-                    .build())
+            return builder;
+        }).generateScreen(parent);
+    }
 
-                // Add Rank
-                .option(Option.<Boolean>createBuilder()
-                    .name(Component.literal("Add Rank"))
-                    .binding(true, () -> config.addRank, newVal -> config.addRank = newVal)
-                    .description(OptionDescription.of(Component.literal("Adds Rank to bridge's messages")))
-                    .controller(opt -> BooleanControllerBuilder.create(opt)
-                        .coloured(true))
-                    .build())
+    private static <T> Option<T> option(
+        String name,
+        String description,
+        T defaultValue,
+        Supplier<T> getter,
+        Consumer<T> setter,
+        Function<Option<T>, ControllerBuilder<T>> controller) {
 
-                // Rank
-                .option(Option.<String>createBuilder()
-                    .name(Component.literal("Rank"))
-                    .binding("§d[MEOW++]", () -> config.rank, newVal -> config.rank = newVal)
-                    .description(OptionDescription.of(Component.literal("")))
-                    .controller(StringControllerBuilder::create)
-                    .build())
+        return Option.<T>createBuilder()
+            .name(Component.literal(name))
+            .description(OptionDescription.of(Component.literal(description)))
+            .binding(defaultValue, getter, setter)
+            .controller(controller)
+            .build();
+    }
 
-                // Add Prefix
-                .option(Option.<Boolean>createBuilder()
-                    .name(Component.literal("Add Prefix"))
-                    .binding(true, () -> config.addPrefix, newVal -> config.addPrefix = newVal)
-                    .description(OptionDescription.of(Component.literal("Adds Prefix to bridge's messages")))
-                    .controller(opt -> BooleanControllerBuilder.create(opt)
-                        .coloured(true))
-                    .build())
+    public enum Guild implements NameableEnum {
+        DUCK,
+        DUCKLING;
 
-                // Prefix
-                .option(Option.<String>createBuilder()
-                    .name(Component.literal("Prefix"))
-                    .binding("§e[BRIDGE]", () -> config.prefix, newVal -> config.prefix = newVal)
-                    .description(OptionDescription.of(Component.literal("")))
-                    .controller(StringControllerBuilder::create)
-                    .build())
-
-                // Player Name Color
-                .option(Option.<Color>createBuilder()
-                    .name(Component.literal("Player Name Color"))
-                    .binding(Color.CYAN, () -> config.playerNameColor, newVal -> config.playerNameColor = newVal)
-                    .description(OptionDescription.of(Component.literal("")))
-                    .controller(ColorControllerBuilder::create)
-                    .build())
-
-                // Compact Guild Message
-                .option(Option.<Boolean>createBuilder()
-                    .name(Component.literal("Auto Welcome Ducksicle"))
-                    .binding(false, () -> config.autoWelcome, newVal -> config.autoWelcome = newVal)
-                    .description(OptionDescription.of(Component.literal("")))
-                    .controller(opt -> BooleanControllerBuilder.create(opt)
-                        .coloured(true))
-                    .build())
-
-                .build()
-            )
-        ))).generateScreen(parent);
+        @Override
+        public Component getDisplayName() {
+            return Component.literal(name());
+        }
     }
 }
