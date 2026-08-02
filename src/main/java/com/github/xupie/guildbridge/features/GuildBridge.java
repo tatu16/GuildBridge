@@ -21,7 +21,8 @@ public class GuildBridge {
     //§2Guild > §7DuckiePrincess §e[STAFF]§f: ✧EmanCarrier ᴹᴼᴰ: Test
     //§2Guild > §b[MVP§c+§b] IsleofDucks §e[STAFF]§f: ˚Nonth: genius
     //§2Guild > §b[MVP§c+§b] IsleofDucks §e[STAFF]§f: ˚✧Serendibite ᴬᴰᴹᴵᴺ: test
-    public static final Pattern GUILD_BRIDGE_MESSAGE_PATTERN = Pattern.compile("^§2Guild > §.(?:\\[.*] )?(?<bot>\\w+) §.\\[\\w+]§f: (?<duckling>˚)?✧?(?<player>\\w+)(?: [^:]+)?: (?<message>.*)$");
+    //§2Guild > §a[VIP] IsleofDuckBridge §e[STAFF]§f: Xupie: test discord\nPlease be mindful of Discord links in chat as they may pose a security risk
+    public static final Pattern GUILD_BRIDGE_MESSAGE_PATTERN = Pattern.compile("^§2Guild > §.(?:\\[.*] )?(?<bot>\\w+) §.\\[\\w+]§f: (?<duckling>˚)?✧?(?<player>\\w+)(?: [ᴬ-ᵿ]+(?: [ᴬ-ᵿ]+)*)?: (?<message>.*)$");
     public static final Pattern GUILD_MESSAGE_PATTERN = Pattern.compile("^§2Guild > .*?(?: |§f)(?<player>\\w+) §.\\[\\w+]§f: (?!✧)(?<message>.*)$");
     public static final Pattern GUILD_JOIN_LEFT = Pattern.compile("^§2Guild > §.(?<player>\\w+) §.(?<action>joined|left)\\.$");
 
