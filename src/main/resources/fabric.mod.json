@@ -10,6 +10,7 @@
 	"contact": {
 		"homepage": "https://github.com/Xupie/GuildBridge",
 		"sources": "https://github.com/Xupie/GuildBridge"
+		"homepage": "https://github.com/tatu16/GuildBridge",
 	},
 	"license": "CC0-1.0",
 	"icon": "assets/guild-bridge/icon.png",

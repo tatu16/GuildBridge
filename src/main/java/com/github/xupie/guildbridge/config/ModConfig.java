@@ -37,7 +37,7 @@ public class ModConfig {
     public boolean addPrefix = true;
 
     @SerialEntry
-    public boolean duckOrDucklingPrefix = true;
+    public boolean addDucklingPrefix = true;
 
     @SerialEntry
     public Guild guildOption = Guild.DUCK;
@@ -105,11 +105,11 @@ public class ModConfig {
             ));
             // Use Duck or Duckling as prefix
             category.option(option(
-                "Use Duck or Duckling as prefix",
-                "Forces prefix to Duck or Duckling depending which guild they are in.",
+                "Use Duck or Duckling as prefix for other guild",
+                "This doesn't detect if message is sent from the Discord bridge",
                 true,
-                () -> config.duckOrDucklingPrefix,
-                value -> config.duckOrDucklingPrefix = value,
+                () -> config.addDucklingPrefix,
+                value -> config.addDucklingPrefix = value,
                 opt -> BooleanControllerBuilder.create(opt).coloured(true)
             ));
             // Guild

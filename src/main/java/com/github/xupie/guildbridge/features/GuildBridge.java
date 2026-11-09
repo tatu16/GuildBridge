@@ -22,7 +22,7 @@ public class GuildBridge {
     //§2Guild > §b[MVP§c+§b] IsleofDucks §e[STAFF]§f: ˚Nonth: genius
     //§2Guild > §b[MVP§c+§b] IsleofDucks §e[STAFF]§f: ˚✧Serendibite ᴬᴰᴹᴵᴺ: test
     //§2Guild > §a[VIP] IsleofDuckBridge §e[STAFF]§f: Xupie: test discord\nPlease be mindful of Discord links in chat as they may pose a security risk
-    public static final Pattern GUILD_BRIDGE_MESSAGE_PATTERN = Pattern.compile("^§2Guild > §.(?:\\[.*] )?(?<bot>\\w+) §.\\[\\w+]§f: (?<duckling>˚)?✧?(?<player>\\w+)(?: [ᴬ-ᵿ]+(?: [ᴬ-ᵿ]+)*)?: (?<message>.*)$");
+    public static final Pattern GUILD_BRIDGE_MESSAGE_PATTERN = Pattern.compile("^§2Guild > §.(?:\\[.*] )?(?<bot>\\w+) §.\\[\\w+]§f: (?<otherguild>˚)?✧?(?<player>\\w+)(?: [ᴬ-ᵿ]+(?: [ᴬ-ᵿ]+)*)?: (?<message>.*)$");
     public static final Pattern GUILD_MESSAGE_PATTERN = Pattern.compile("^§2Guild > .*?(?: |§f)(?<player>\\w+) §.\\[\\w+]§f: (?!✧)(?<message>.*)$");
     public static final Pattern GUILD_JOIN_LEFT = Pattern.compile("^§2Guild > §.(?<player>\\w+) §.(?<action>joined|left)\\.$");
 
@@ -39,8 +39,8 @@ public class GuildBridge {
 
         Matcher bridgeMatcher = GUILD_BRIDGE_MESSAGE_PATTERN.matcher(msg);
         if (bridgeMatcher.matches() && bridgeMatcher.group("bot").equals(config.botIGN.trim())) {
-            boolean isDuckling = bridgeMatcher.group("duckling") != null;
-            return handleBridgeMessage(bridgeMatcher.group("player"), bridgeMatcher.group("message"), isDuckling, config);
+            boolean inOtherGuild = bridgeMatcher.group("otherguild") != null;
+            return handleBridgeMessage(bridgeMatcher.group("player"), bridgeMatcher.group("message"), inOtherGuild, config);
         }
 
         Matcher guildMessage = GUILD_MESSAGE_PATTERN.matcher(msg);
@@ -56,10 +56,10 @@ public class GuildBridge {
         return textMessage;
     }
 
-    private static Component handleBridgeMessage(String player, String message, boolean isDuckling, ModConfig config) {
+    private static Component handleBridgeMessage(String player, String message, boolean inOtherGuild, ModConfig config) {
         String compact = config.compactGuildMessage ? BRIDGE_PREFIX_COMPACT : BRIDGE_PREFIX_FULL;
         String rank = config.addRank && config.rank != null ? " " + config.rank : "";
-        String prefix = resolvePrefix(config, isDuckling);
+        String prefix = resolvePrefix(config, inOtherGuild);
 
         Color playerNameColor = config.playerNameColor;
         TextColor textColor = playerNameColor != null
@@ -93,13 +93,13 @@ public class GuildBridge {
             .withColor(ChatFormatting.AQUA);
     }
 
-    private static String resolvePrefix(ModConfig config, boolean isDuckling) {
+    private static String resolvePrefix(ModConfig config, boolean inOtherGuild) {
         if (!config.addPrefix) return "";
-        if (config.duckOrDucklingPrefix) {
-            boolean isDucklingPlayer = isDuckling ^ (config.guildOption == ModConfig.Guild.DUCKLING);
-            return isDucklingPlayer ? " §e[DUCKLING]" : " §e[DUCK]";
+        if (config.addDucklingPrefix) {
+            if (!inOtherGuild) return " §e[BRIDGE]";
+            if (config.guildOption == ModConfig.Guild.DUCK) return " §e[DUCKLING]";
+            if (config.guildOption == ModConfig.Guild.DUCKLING) return " §e[DUCK]";
         }
-
         return config.prefix != null ? " " + config.prefix : "";
     }
 }
