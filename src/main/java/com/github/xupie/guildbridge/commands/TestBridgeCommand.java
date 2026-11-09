@@ -52,7 +52,7 @@ public final class TestBridgeCommand {
     private static void send(Component text) {
         Minecraft client = Minecraft.getInstance();
         if (client.player != null) {
-            client.gui.getChat().addClientSystemMessage(text);
+            client.gui.hud.getChat().addClientSystemMessage(text);
         }
     }
 

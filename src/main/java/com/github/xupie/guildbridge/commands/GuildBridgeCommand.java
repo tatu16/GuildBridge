@@ -24,7 +24,7 @@ public final class GuildBridgeCommand {
 
     private static int openConfig(CommandContext<FabricClientCommandSource> context) {
         Screen configScreen = ModConfig.configScreen(null);
-        Minecraft.getInstance().setScreen(configScreen);
+        Minecraft.getInstance().gui.setScreen(configScreen);
         return Command.SINGLE_SUCCESS;
     }
 }

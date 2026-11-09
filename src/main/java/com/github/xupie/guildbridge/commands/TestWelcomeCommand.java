@@ -29,7 +29,7 @@ public final class TestWelcomeCommand {
 
         Minecraft client = Minecraft.getInstance();
         if (client.player != null) {
-            client.gui.getChat().addClientSystemMessage(processed);
+            client.gui.hud.getChat().addClientSystemMessage(processed);
         }
 
         return Command.SINGLE_SUCCESS;
